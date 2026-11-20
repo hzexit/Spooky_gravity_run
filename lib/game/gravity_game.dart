@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
+import 'background.dart';
 import 'player.dart';
 import 'obstacles.dart';
 
@@ -14,6 +15,7 @@ class GravityGame extends FlameGame
 
   @override
   Future<void> onLoad() async {
+    add(ScrollingLines()); // ใส่ก่อน player เพื่อให้อยู่ข้างหลัง
     player = Player();
     add(player);
   }
