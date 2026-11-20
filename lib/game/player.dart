@@ -1,8 +1,11 @@
 import 'dart:ui';
+import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'gravity_game.dart';
+import 'obstacles.dart';
 
-class Player extends PositionComponent with HasGameReference<GravityGame> {
+class Player extends PositionComponent
+    with HasGameReference<GravityGame>, CollisionCallbacks {
   static const double gravity = 2000;
   static const double margin = 40; // ระยะห่างจากขอบบน/ล่าง
   double vy = 0;
@@ -13,9 +16,16 @@ class Player extends PositionComponent with HasGameReference<GravityGame> {
   @override
   Future<void> onLoad() async {
     position = Vector2(120, game.size.y - margin - size.y / 2);
+    add(RectangleHitbox());
   }
 
   void flip() => dir = -dir;
+
+  void reset() {
+    dir = 1;
+    vy = 0;
+    position = Vector2(120, game.size.y - margin - size.y / 2);
+  }
 
   @override
   void update(double dt) {
@@ -33,6 +43,12 @@ class Player extends PositionComponent with HasGameReference<GravityGame> {
       position.y = ceiling;
       vy = 0;
     }
+  }
+
+  @override
+  void onCollisionStart(Set<Vector2> points, PositionComponent other) {
+    super.onCollisionStart(points, other);
+    if (other is Spike) game.gameOver();
   }
 
   @override
