@@ -55,15 +55,29 @@ class Player extends PositionComponent
   void onCollisionStart(Set<Vector2> points, PositionComponent other) {
     super.onCollisionStart(points, other);
     if (other is Spike) {
-      game.gameOver();
+      game.hitSpike(other);
     } else if (other is Candy) {
       game.collectCandy();
+      other.removeFromParent();
+    } else if (other is PowerUp) {
+      game.collectPowerUp(other.type);
       other.removeFromParent();
     }
   }
 
   @override
   void render(Canvas canvas) {
+    final center = Offset(size.x / 2, size.y / 2);
+
+    // วงแม่เหล็กจางๆ
+    if (game.magnetTime > 0) {
+      canvas.drawCircle(
+        center,
+        GravityGame.magnetRadius,
+        Paint()..color = const Color(0x18EF5350),
+      );
+    }
+
     canvas.save();
     // อยู่บนเพดาน = พลิกหัวกลับ
     if (dir == -1) {
@@ -72,5 +86,24 @@ class Player extends PositionComponent
     }
     paintSkin(canvas, size.x, size.y, game.currentSkin);
     canvas.restore();
+
+    // วงโล่
+    if (game.shieldActive) {
+      canvas.drawCircle(
+        center,
+        size.x * 0.75,
+        Paint()
+          ..color = const Color(0x3329B6F6)
+          ..style = PaintingStyle.fill,
+      );
+      canvas.drawCircle(
+        center,
+        size.x * 0.75,
+        Paint()
+          ..color = const Color(0xFF29B6F6)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3,
+      );
+    }
   }
 }

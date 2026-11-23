@@ -11,12 +11,14 @@ class LevelGenerator {
   final _rng = Random();
   double nextChunkX = 0; // ตำแหน่ง x บนจอที่ chunk ถัดไปจะเริ่ม
   Chunk? _last;
+  int _sincePowerUp = 0; // จำนวน chunk นับจากไอเทมล่าสุด
 
   LevelGenerator(this.game);
 
   void reset() {
     nextChunkX = game.size.x + 200;
     _last = null;
+    _sincePowerUp = 0;
   }
 
   void update(double dt, double scrollSpeed, double distance) {
@@ -24,6 +26,7 @@ class LevelGenerator {
     while (nextChunkX < game.size.x + LevelRules.col) {
       final chunk = _pick(distance);
       _spawn(chunk, nextChunkX);
+      _maybeSpawnPowerUp(nextChunkX, distance);
       nextChunkX += chunk.width * LevelRules.col;
     }
   }
@@ -45,6 +48,19 @@ class LevelGenerator {
     } while (c == _last && pool.length > 1);
     _last = c;
     return c;
+  }
+
+  // วางไอเทมตรงช่องว่าง (padding) ต้นแต่ละ chunk ซึ่งว่างเสมอ จึงไม่ทับหนาม
+  void _maybeSpawnPowerUp(double startX, double distance) {
+    _sincePowerUp++;
+    if (distance < 60) return; // ช่วงเริ่มเกมยังไม่ให้
+    if (_sincePowerUp < 3) return; // ห่างกันอย่างน้อย 3 chunk
+    if (_rng.nextDouble() > 0.4) return;
+
+    _sincePowerUp = 0;
+    final type = _rng.nextBool() ? PowerType.shield : PowerType.magnet;
+    final x = startX + 1.5 * LevelRules.col;
+    game.add(PowerUp(type, Vector2(x, game.size.y / 2)));
   }
 
   void _spawn(Chunk chunk, double startX) {

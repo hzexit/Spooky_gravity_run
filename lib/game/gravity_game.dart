@@ -18,9 +18,12 @@ class GravityGame extends FlameGame
   late LevelGenerator level;
   late TextComponent scoreText;
   late TextComponent candyText;
+  late TextComponent powerText;
 
   static const double baseSpeed = 220;
   static const double maxSpeed = 480;
+  static const double magnetRadius = 260; // รัศมีดูดขนม (px)
+  static const double magnetDuration = 8; // วินาที
 
   double scrollSpeed = baseSpeed;
   double distance = 0; // หน่วยเมตร
@@ -31,9 +34,13 @@ class GravityGame extends FlameGame
   final best = ValueNotifier<int>(0);
   SkinDef currentSkin = skins.first;
 
+  // power-up
+  bool shieldActive = false;
+  double magnetTime = 0;
+  double invincibleTime = 0; // กันชนซ้ำหลังโล่แตก
+
   @override
   Future<void> onLoad() async {
-    // อ่านข้อมูลจากฐานข้อมูล (ถ้ามีปัญหา เกมยังเล่นได้)
     try {
       best.value = await DbHelper.instance.getBestDistance();
       currentSkin = skinById(await DbHelper.instance.getSelectedSkin());
@@ -74,6 +81,21 @@ class GravityGame extends FlameGame
       ),
     );
     add(candyText);
+
+    powerText = TextComponent(
+      text: '',
+      anchor: Anchor.topCenter,
+      position: Vector2(size.x / 2, 8),
+      priority: 10,
+      textRenderer: TextPaint(
+        style: const TextStyle(
+          color: Color(0xFF80DEEA),
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+    add(powerText);
   }
 
   @override
@@ -81,6 +103,7 @@ class GravityGame extends FlameGame
     super.onGameResize(size);
     if (isLoaded) {
       candyText.position = Vector2(size.x - 16, 8);
+      powerText.position = Vector2(size.x / 2, 8);
     }
   }
 
@@ -93,12 +116,50 @@ class GravityGame extends FlameGame
     scrollSpeed = (baseSpeed + distance * 0.2).clamp(baseSpeed, maxSpeed);
     scoreText.text = '${distance.floor()} m';
 
+    if (magnetTime > 0) magnetTime -= dt;
+    if (magnetTime < 0) magnetTime = 0;
+    if (invincibleTime > 0) invincibleTime -= dt;
+    _updatePowerText();
+
     level.update(dt, scrollSpeed, distance);
+  }
+
+  void _updatePowerText() {
+    final parts = <String>[];
+    if (shieldActive) parts.add('SHIELD');
+    if (magnetTime > 0) parts.add('MAGNET ${magnetTime.ceil()}s');
+    final t = parts.join('   ');
+    if (powerText.text != t) powerText.text = t;
   }
 
   void collectCandy() {
     candies++;
     candyText.text = 'Candy: $candies';
+  }
+
+  void collectPowerUp(PowerType type) {
+    switch (type) {
+      case PowerType.shield:
+        shieldActive = true;
+        break;
+      case PowerType.magnet:
+        magnetTime = magnetDuration;
+        break;
+    }
+    _updatePowerText();
+  }
+
+  /// ชนหนาม: ถ้ามีโล่ โล่แตกแทนและหนามหาย ถ้าไม่มีก็จบเกม
+  void hitSpike(Spike spike) {
+    if (invincibleTime > 0) return;
+    if (shieldActive) {
+      shieldActive = false;
+      invincibleTime = 0.4;
+      spike.removeFromParent();
+      _updatePowerText();
+    } else {
+      gameOver();
+    }
   }
 
   Future<void> _saveRun(int d, int c) async {
@@ -165,13 +226,18 @@ class GravityGame extends FlameGame
   void restart() {
     children.whereType<Spike>().toList().forEach((s) => s.removeFromParent());
     children.whereType<Candy>().toList().forEach((c) => c.removeFromParent());
+    children.whereType<PowerUp>().toList().forEach((p) => p.removeFromParent());
     player.reset();
     isGameOver = false;
     isNewBest = false;
     distance = 0;
     candies = 0;
+    shieldActive = false;
+    magnetTime = 0;
+    invincibleTime = 0;
     scoreText.text = '0 m';
     candyText.text = 'Candy: 0';
+    powerText.text = '';
     scrollSpeed = baseSpeed;
     level.reset();
     resumeEngine();
