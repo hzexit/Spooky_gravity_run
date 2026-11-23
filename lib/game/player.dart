@@ -3,6 +3,7 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'gravity_game.dart';
 import 'obstacles.dart';
+import 'items.dart';
 
 class Player extends PositionComponent
     with HasGameReference<GravityGame>, CollisionCallbacks {
@@ -48,7 +49,12 @@ class Player extends PositionComponent
   @override
   void onCollisionStart(Set<Vector2> points, PositionComponent other) {
     super.onCollisionStart(points, other);
-    if (other is Spike) game.gameOver();
+    if (other is Spike) {
+      game.gameOver();
+    } else if (other is Candy) {
+      game.collectCandy();
+      other.removeFromParent();
+    }
   }
 
   @override
