@@ -5,7 +5,7 @@ import 'gravity_game.dart';
 
 class Candy extends PositionComponent with HasGameReference<GravityGame> {
   Candy(Vector2 pos)
-      : super(position: pos, size: Vector2.all(24), anchor: Anchor.center);
+      : super(position: pos, size: Vector2.all(32), anchor: Anchor.center);
 
   @override
   Future<void> onLoad() async {

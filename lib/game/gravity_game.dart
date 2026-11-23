@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
@@ -10,10 +9,12 @@ import 'background.dart';
 import 'player.dart';
 import 'obstacles.dart';
 import 'items.dart';
+import 'level_generator.dart';
 
 class GravityGame extends FlameGame
     with TapCallbacks, HasCollisionDetection {
   late Player player;
+  late LevelGenerator level;
   late TextComponent scoreText;
   late TextComponent candyText;
 
@@ -24,19 +25,17 @@ class GravityGame extends FlameGame
   double scrollSpeed = baseSpeed;
   double distance = 0; // หน่วยเมตร
   int candies = 0;
-  double spawnTimer = 0;
-  double candyTimer = 2;
   bool isPlaying = false; // false = อยู่หน้าเมนู
   bool isGameOver = false;
   bool isNewBest = false;
-  final best = ValueNotifier<int>(0); // สถิติสูงสุด (เมนูฟังค่านี้อยู่)
-  final _rng = Random();
+  final best = ValueNotifier<int>(0);
 
   @override
   Future<void> onLoad() async {
     final prefs = await SharedPreferences.getInstance();
     best.value = prefs.getInt(_bestKey) ?? 0;
 
+    level = LevelGenerator(this);
     add(ScrollingLines());
     player = Player();
     add(player);
@@ -89,27 +88,8 @@ class GravityGame extends FlameGame
     scrollSpeed = (baseSpeed + distance * 0.2).clamp(baseSpeed, maxSpeed);
     scoreText.text = '${distance.floor()} m';
 
-    // spawn หนาม (ยิ่งเร็ว ยิ่งถี่)
-    spawnTimer -= dt;
-    if (spawnTimer <= 0) {
-      final factor = baseSpeed / scrollSpeed;
-      spawnTimer = (1.3 + _rng.nextDouble()) * factor;
-      final onFloor = _rng.nextBool();
-      final y = onFloor
-          ? size.y - Player.margin - 20
-          : Player.margin + 20;
-      add(Spike(Vector2(size.x + 40, y)));
-    }
-
-    // spawn ขนม ที่ความสูงสุ่ม
-    candyTimer -= dt;
-    if (candyTimer <= 0) {
-      candyTimer = 1.5 + _rng.nextDouble() * 2;
-      final minY = Player.margin + 30;
-      final maxY = size.y - Player.margin - 30;
-      final y = minY + _rng.nextDouble() * (maxY - minY);
-      add(Candy(Vector2(size.x + 40, y)));
-    }
+    // สร้างด่านต่อเนื่องด้วย chunk
+    level.update(dt, scrollSpeed, distance);
   }
 
   void collectCandy() {
@@ -167,8 +147,7 @@ class GravityGame extends FlameGame
     scoreText.text = '0 m';
     candyText.text = 'Candy: 0';
     scrollSpeed = baseSpeed;
-    spawnTimer = 1;
-    candyTimer = 2;
+    level.reset();
     resumeEngine();
   }
 }
