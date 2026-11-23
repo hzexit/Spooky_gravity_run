@@ -50,12 +50,7 @@ class MainMenu extends StatelessWidget {
     return Stack(
       children: [
         Positioned.fill(
-          child: Image.asset(
-            'assets/images/menu_bg.png',
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) =>
-                CustomPaint(painter: _SpookyBackgroundPainter()),
-          ),
+          child: CustomPaint(painter: _SpookyBackgroundPainter()),
         ),
         Positioned.fill(
           child: Center(
@@ -66,14 +61,8 @@ class MainMenu extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Image.asset(
-                      'assets/images/logo.png',
-                      width: 420,
-                      errorBuilder: (_, __, ___) => _logo(),
-                    ),
+                    _logo(),
                     const SizedBox(height: 14),
-
-                    // สถิติสูงสุด
                     ValueListenableBuilder<int>(
                       valueListenable: game.best,
                       builder: (context, value, _) => Text(
@@ -87,12 +76,16 @@ class MainMenu extends StatelessWidget {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 20),
                     MenuButton(
                       label: 'PLAY',
                       selected: true,
                       onTap: game.startGame,
+                    ),
+                    const SizedBox(height: 14),
+                    MenuButton(
+                      label: 'STATS',
+                      onTap: game.showStats,
                     ),
                     const SizedBox(height: 14),
                     MenuButton(

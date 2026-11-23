@@ -4,7 +4,7 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../data/db_helper.dart';
 import 'background.dart';
 import 'player.dart';
 import 'obstacles.dart';
@@ -20,7 +20,6 @@ class GravityGame extends FlameGame
 
   static const double baseSpeed = 220;
   static const double maxSpeed = 480;
-  static const String _bestKey = 'best_distance';
 
   double scrollSpeed = baseSpeed;
   double distance = 0; // หน่วยเมตร
@@ -32,8 +31,12 @@ class GravityGame extends FlameGame
 
   @override
   Future<void> onLoad() async {
-    final prefs = await SharedPreferences.getInstance();
-    best.value = prefs.getInt(_bestKey) ?? 0;
+    // อ่านสถิติสูงสุดจากฐานข้อมูล (ถ้า DB มีปัญหา เกมยังเล่นได้)
+    try {
+      best.value = await DbHelper.instance.getBestDistance();
+    } catch (e) {
+      debugPrint('DB load error: $e');
+    }
 
     level = LevelGenerator(this);
     add(ScrollingLines());
@@ -83,12 +86,10 @@ class GravityGame extends FlameGame
     super.update(dt);
     if (!isPlaying || isGameOver) return;
 
-    // ระยะทางและความเร็ว
     distance += scrollSpeed * dt / 10;
     scrollSpeed = (baseSpeed + distance * 0.2).clamp(baseSpeed, maxSpeed);
     scoreText.text = '${distance.floor()} m';
 
-    // สร้างด่านต่อเนื่องด้วย chunk
     level.update(dt, scrollSpeed, distance);
   }
 
@@ -97,19 +98,21 @@ class GravityGame extends FlameGame
     candyText.text = 'Candy: $candies';
   }
 
-  Future<void> _saveBest(int value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_bestKey, value);
+  Future<void> _saveRun(int d, int c) async {
+    try {
+      await DbHelper.instance.insertRun(distance: d, candies: c);
+    } catch (e) {
+      debugPrint('DB save error: $e');
+    }
   }
 
   void gameOver() {
+    if (isGameOver) return;
     isGameOver = true;
     final d = distance.floor();
     isNewBest = d > best.value;
-    if (isNewBest) {
-      best.value = d;
-      _saveBest(d);
-    }
+    if (isNewBest) best.value = d;
+    _saveRun(d, candies);
     pauseEngine();
     overlays.add('gameOver');
   }
@@ -127,6 +130,16 @@ class GravityGame extends FlameGame
     overlays.remove('gameOver');
     restart();
     isPlaying = false;
+    overlays.add('menu');
+  }
+
+  void showStats() {
+    overlays.remove('menu');
+    overlays.add('stats');
+  }
+
+  void closeStats() {
+    overlays.remove('stats');
     overlays.add('menu');
   }
 
