@@ -84,13 +84,13 @@ class MainMenu extends StatelessWidget {
                     ),
                     const SizedBox(height: 14),
                     MenuButton(
-                      label: 'STATS',
-                      onTap: game.showStats,
+                      label: 'SHOP',
+                      onTap: game.showShop,
                     ),
                     const SizedBox(height: 14),
                     MenuButton(
-                      label: 'SHOP',
-                      onTap: () => _comingSoon(context),
+                      label: 'STATS',
+                      onTap: game.showStats,
                     ),
                     const SizedBox(height: 14),
                     MenuButton(

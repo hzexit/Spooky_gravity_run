@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'game/gravity_game.dart';
 import 'ui/main_menu.dart';
 import 'ui/game_over_menu.dart';
-import 'ui/stats_menu.dart'; // จุดที่ 1: import นี้ต้องมี
+import 'ui/stats_menu.dart';
+import 'ui/shop_menu.dart';
 
 void main() {
   final game = GravityGame();
@@ -19,7 +20,8 @@ void main() {
           overlayBuilderMap: {
             'menu': (context, g) => MainMenu(game: g),
             'gameOver': (context, g) => GameOverMenu(game: g),
-            'stats': (context, g) => StatsMenu(game: g), // จุดที่ 2: บรรทัดนี้ต้องมี
+            'stats': (context, g) => StatsMenu(game: g),
+            'shop': (context, g) => ShopMenu(game: g),
           },
         ),
       ),

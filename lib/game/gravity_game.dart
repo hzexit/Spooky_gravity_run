@@ -10,6 +10,7 @@ import 'player.dart';
 import 'obstacles.dart';
 import 'items.dart';
 import 'level_generator.dart';
+import 'skins.dart';
 
 class GravityGame extends FlameGame
     with TapCallbacks, HasCollisionDetection {
@@ -28,12 +29,14 @@ class GravityGame extends FlameGame
   bool isGameOver = false;
   bool isNewBest = false;
   final best = ValueNotifier<int>(0);
+  SkinDef currentSkin = skins.first;
 
   @override
   Future<void> onLoad() async {
-    // อ่านสถิติสูงสุดจากฐานข้อมูล (ถ้า DB มีปัญหา เกมยังเล่นได้)
+    // อ่านข้อมูลจากฐานข้อมูล (ถ้ามีปัญหา เกมยังเล่นได้)
     try {
       best.value = await DbHelper.instance.getBestDistance();
+      currentSkin = skinById(await DbHelper.instance.getSelectedSkin());
     } catch (e) {
       debugPrint('DB load error: $e');
     }
@@ -140,6 +143,16 @@ class GravityGame extends FlameGame
 
   void closeStats() {
     overlays.remove('stats');
+    overlays.add('menu');
+  }
+
+  void showShop() {
+    overlays.remove('menu');
+    overlays.add('shop');
+  }
+
+  void closeShop() {
+    overlays.remove('shop');
     overlays.add('menu');
   }
 
