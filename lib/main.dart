@@ -21,7 +21,7 @@ void main() {
           game: game,
           initialActiveOverlays: const ['menu'],
           overlayBuilderMap: {
-            'menu': (context, g) => MainMenu(game: g),
+            'menu': (context, GravityGame g) => MainMenu(game: g),
             'gameOver': (context, g) => GameOverMenu(game: g),
             'stats': (context, g) => StatsMenu(game: g),
             'shop': (context, g) => ShopMenu(game: g),

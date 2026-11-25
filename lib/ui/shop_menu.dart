@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../data/db_helper.dart';
 import '../game/gravity_game.dart';
 import '../game/skins.dart';
-import 'menu_button.dart';
+import 'pixel_ui.dart';
 
 class _SkinPreview extends CustomPainter {
   final SkinDef skin;
@@ -89,32 +89,24 @@ class _ShopMenuState extends State<ShopMenu> {
 
     String label;
     VoidCallback? onTap;
-    Color color;
+    PxTone tone;
     if (equipped) {
       label = 'EQUIPPED';
       onTap = null;
-      color = Colors.white24;
+      tone = PxTone.grey;
     } else if (owned) {
       label = 'EQUIP';
       onTap = () => _equip(s);
-      color = const Color(0xFF2E7D32);
+      tone = PxTone.green;
     } else {
       label = 'BUY ${s.price}';
       onTap = canAfford ? () => _buy(s) : null;
-      color = canAfford ? const Color(0xFFFF9800) : Colors.white12;
+      tone = PxTone.orange;
     }
 
-    return Container(
-      width: 150,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white10,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: equipped ? const Color(0xFFFF9800) : Colors.white24,
-          width: equipped ? 2.5 : 1.5,
-        ),
-      ),
+    return PixelCard(
+      width: 140,
+      highlight: equipped,
       child: Column(
         children: [
           SizedBox(
@@ -122,33 +114,21 @@ class _ShopMenuState extends State<ShopMenu> {
             height: 64,
             child: CustomPaint(painter: _SkinPreview(s)),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Text(
             s.name,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 17,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1,
-            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: pxStyle(size: 13, spacing: 1),
           ),
-          const SizedBox(height: 10),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: onTap,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: color,
-                disabledBackgroundColor: color,
-                foregroundColor: Colors.white,
-                disabledForegroundColor: Colors.white60,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              child: Text(label,
-                  style: const TextStyle(fontWeight: FontWeight.w800)),
-            ),
+          const SizedBox(height: 8),
+          PixelButton(
+            label: label,
+            onTap: onTap,
+            tone: tone,
+            compact: true,
+            highlight: equipped,
           ),
         ],
       ),
@@ -157,70 +137,61 @@ class _ShopMenuState extends State<ShopMenu> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: const Color(0xF20B1B26),
+    return PixelScreen(
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 620),
+          constraints: const BoxConstraints(maxWidth: 600),
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'SKIN SHOP',
-                  style: TextStyle(
-                    color: Color(0xFFFF9800),
-                    fontSize: 36,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 5,
+            padding: const EdgeInsets.all(16),
+            child: PixelPanel(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const PixelBanner('SKIN SHOP'),
+                  const SizedBox(height: 12),
+                  Text(
+                    'CANDY: $_balance',
+                    style: pxStyle(size: 20, color: pxYellow, spacing: 2),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Candy: $_balance',
-                  style: const TextStyle(
-                    color: Color(0xFFFFEB3B),
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                SizedBox(
-                  height: 22,
-                  child: Text(
-                    _msg,
-                    style: const TextStyle(color: Colors.white70, fontSize: 15),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                if (_loading)
-                  const Padding(
-                    padding: EdgeInsets.all(24),
-                    child: CircularProgressIndicator(),
-                  )
-                else if (_error)
-                  const Padding(
-                    padding: EdgeInsets.all(16),
+                  const SizedBox(height: 6),
+                  SizedBox(
+                    height: 20,
                     child: Text(
-                      'Database not ready.',
-                      style: TextStyle(color: Colors.redAccent),
+                      _msg,
+                      style: pxStyle(size: 12, color: pxMuted, spacing: 1),
                     ),
-                  )
-                else
-                  Wrap(
-                    alignment: WrapAlignment.center,
-                    spacing: 14,
-                    runSpacing: 14,
-                    children: skins.map(_card).toList(),
                   ),
-                const SizedBox(height: 24),
-                MenuButton(
-                  label: 'BACK',
-                  selected: true,
-                  onTap: widget.game.closeShop,
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  if (_loading)
+                    const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: CircularProgressIndicator(color: pxGold),
+                    )
+                  else if (_error)
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        'Database not ready.',
+                        style: pxStyle(size: 13, color: Colors.redAccent, spacing: 1),
+                      ),
+                    )
+                  else
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: skins.map(_card).toList(),
+                    ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: 200,
+                    child: PixelButton(
+                      label: 'BACK',
+                      onTap: widget.game.closeShop,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

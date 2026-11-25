@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/db_helper.dart';
 import '../game/gravity_game.dart';
-import 'menu_button.dart';
+import 'pixel_ui.dart';
 
 class StatsMenu extends StatefulWidget {
   final GravityGame game;
@@ -26,32 +26,16 @@ class _StatsMenuState extends State<StatsMenu> {
       '${_two(t.day)}/${_two(t.month)} ${_two(t.hour)}:${_two(t.minute)}';
 
   Widget _card(String label, String value, Color color) {
-    return Container(
-      width: 170,
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
-      decoration: BoxDecoration(
-        color: Colors.white10,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white24, width: 1.5),
-      ),
+    return PixelCard(
+      width: 150,
       child: Column(
         children: [
-          Text(
-            value,
-            style: TextStyle(
-              color: color,
-              fontSize: 26,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 2),
+          Text(value, style: pxStyle(size: 18, color: color, spacing: 0)),
+          const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 13,
-              letterSpacing: 1.5,
-            ),
+            textAlign: TextAlign.center,
+            style: pxStyle(size: 10, color: pxMuted, spacing: 1),
           ),
         ],
       ),
@@ -59,24 +43,22 @@ class _StatsMenuState extends State<StatsMenu> {
   }
 
   Widget _runRow(RunRecord r) {
-    const style = TextStyle(color: Colors.white, fontSize: 15);
+    final s = pxStyle(size: 12, spacing: 0);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           SizedBox(
-            width: 110,
+            width: 92,
             child: Text(_fmt(r.playedAt),
-                style: const TextStyle(color: Colors.white60, fontSize: 14)),
+                style: pxStyle(size: 11, color: pxMuted, spacing: 0)),
           ),
-          Expanded(child: Text('${r.distance} m', style: style)),
+          Expanded(child: Text('${r.distance} m', style: s)),
           Expanded(
-            child: Text(
-              'Candy ${r.candies}',
-              style: const TextStyle(color: Color(0xFFFFEB3B), fontSize: 15),
-            ),
+            child: Text('Candy ${r.candies}',
+                style: pxStyle(size: 12, color: pxYellow, spacing: 0)),
           ),
-          Text('${r.score} pts', style: style),
+          Text('${r.score} pts', style: s),
         ],
       ),
     );
@@ -88,33 +70,27 @@ class _StatsMenuState extends State<StatsMenu> {
       children: [
         Wrap(
           alignment: WrapAlignment.center,
-          spacing: 12,
-          runSpacing: 12,
+          spacing: 10,
+          runSpacing: 10,
           children: [
             _card('BEST DISTANCE', '${s.bestDistance} m', Colors.white),
-            _card('BEST SCORE', '${s.bestScore}', const Color(0xFFFF9800)),
+            _card('BEST SCORE', '${s.bestScore}', pxOrange),
             _card('GAMES PLAYED', '${s.runs}', Colors.white),
             _card('TOTAL DISTANCE', '${s.totalDistance} m', Colors.white),
-            _card('TOTAL CANDY', '${s.totalCandies}', const Color(0xFFFFEB3B)),
-            _card('CANDY BALANCE', '${s.balance}', const Color(0xFFFFEB3B)),
+            _card('TOTAL CANDY', '${s.totalCandies}', pxYellow),
+            _card('CANDY BALANCE', '${s.balance}', pxYellow),
           ],
         ),
-        const SizedBox(height: 22),
-        const Text(
-          'RECENT RUNS',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 3,
-          ),
-        ),
-        const Divider(color: Colors.white24),
+        const SizedBox(height: 20),
+        Text('RECENT RUNS', style: pxStyle(size: 14, color: pxGold, spacing: 3)),
+        const SizedBox(height: 6),
+        Container(height: 3, color: pxGoldDark),
+        const SizedBox(height: 4),
         if (s.recent.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(12),
+          Padding(
+            padding: const EdgeInsets.all(12),
             child: Text('No runs yet. Go play!',
-                style: TextStyle(color: Colors.white60)),
+                style: pxStyle(size: 13, color: pxMuted, spacing: 1)),
           )
         else
           ...s.recent.map(_runRow),
@@ -124,55 +100,50 @@ class _StatsMenuState extends State<StatsMenu> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: const Color(0xF20B1B26),
+    return PixelScreen(
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 560),
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'STATISTICS',
-                  style: TextStyle(
-                    color: Color(0xFFFF9800),
-                    fontSize: 36,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 5,
+            padding: const EdgeInsets.all(16),
+            child: PixelPanel(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const PixelBanner('STATISTICS'),
+                  const SizedBox(height: 16),
+                  FutureBuilder<StatsSummary>(
+                    future: _future,
+                    builder: (context, snap) {
+                      if (snap.hasError) {
+                        return Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Text(
+                            'Database not ready.\nOn web, run: dart run sqflite_common_ffi_web:setup',
+                            textAlign: TextAlign.center,
+                            style: pxStyle(size: 12, color: Colors.redAccent, spacing: 0),
+                          ),
+                        );
+                      }
+                      if (!snap.hasData) {
+                        return const Padding(
+                          padding: EdgeInsets.all(24),
+                          child: CircularProgressIndicator(color: pxGold),
+                        );
+                      }
+                      return _content(snap.data!);
+                    },
                   ),
-                ),
-                const SizedBox(height: 18),
-                FutureBuilder<StatsSummary>(
-                  future: _future,
-                  builder: (context, snap) {
-                    if (snap.hasError) {
-                      return const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Text(
-                          'Database not ready.\nOn web, run: dart run sqflite_common_ffi_web:setup',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.redAccent),
-                        ),
-                      );
-                    }
-                    if (!snap.hasData) {
-                      return const Padding(
-                        padding: EdgeInsets.all(24),
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-                    return _content(snap.data!);
-                  },
-                ),
-                const SizedBox(height: 22),
-                MenuButton(
-                  label: 'BACK',
-                  selected: true,
-                  onTap: widget.game.closeStats,
-                ),
-              ],
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: 200,
+                    child: PixelButton(
+                      label: 'BACK',
+                      onTap: widget.game.closeStats,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

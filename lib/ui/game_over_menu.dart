@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../game/gravity_game.dart';
-import 'menu_button.dart';
+import 'pixel_ui.dart';
 
 class GameOverMenu extends StatelessWidget {
   final GravityGame game;
@@ -8,73 +8,47 @@ class GameOverMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.black54,
-      child: Center(
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
+    return PixelScreen(
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: PixelPanel(
+            width: 320,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'GAME OVER',
-                  style: TextStyle(
-                    color: Color(0xFFE53935),
-                    fontSize: 48,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 4,
-                    decoration: TextDecoration.none,
-                    shadows: [Shadow(color: Color(0xFFE53935), blurRadius: 16)],
-                  ),
-                ),
-                const SizedBox(height: 12),
+                const PixelBanner('GAME OVER'),
+                const SizedBox(height: 16),
                 Text(
                   '${game.distance.floor()} m',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    decoration: TextDecoration.none,
-                  ),
+                  style: pxStyle(size: 30, spacing: 1, shadow: const Color(0xFF000000)),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 8),
                 // สถิติสูงสุด หรือป้าย NEW BEST
                 Text(
-                  game.isNewBest
-                      ? 'NEW BEST!'
-                      : 'BEST: ${game.best.value} m',
-                  style: TextStyle(
-                    color: game.isNewBest
-                        ? const Color(0xFFFF9800)
-                        : Colors.white70,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    decoration: TextDecoration.none,
+                  game.isNewBest ? 'NEW BEST!' : 'BEST: ${game.best.value} m',
+                  style: pxStyle(
+                    size: 18,
+                    color: game.isNewBest ? pxOrange : pxMuted,
+                    spacing: 2,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Text(
-                  'Candy: ${game.candies}',
-                  style: const TextStyle(
-                    color: Color(0xFFFFEB3B),
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    decoration: TextDecoration.none,
-                  ),
+                  'CANDY: ${game.candies}',
+                  style: pxStyle(size: 18, color: pxYellow, spacing: 2),
                 ),
-                const SizedBox(height: 24),
-                MenuButton(
+                const SizedBox(height: 20),
+                PixelButton(
                   label: 'PLAY AGAIN',
-                  selected: true,
+                  tone: PxTone.red,
+                  big: true,
+                  arrows: true,
                   onTap: game.startGame,
                 ),
-                const SizedBox(height: 14),
-                MenuButton(
-                  label: 'MENU',
-                  onTap: game.backToMenu,
-                ),
+                const SizedBox(height: 12),
+                PixelButton(label: 'MENU', onTap: game.backToMenu),
               ],
             ),
           ),

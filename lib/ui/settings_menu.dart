@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../game/audio_manager.dart';
 import '../game/gravity_game.dart';
-import 'menu_button.dart';
+import 'pixel_ui.dart';
 
 class SettingsMenu extends StatelessWidget {
   final GravityGame game;
@@ -10,39 +10,28 @@ class SettingsMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final audio = AudioManager.instance;
-    return Material(
-      color: const Color(0xF20B1B26),
-      child: Center(
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Padding(
-            padding: const EdgeInsets.all(20),
+    return PixelScreen(
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: PixelPanel(
+            width: 320,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'SETTINGS',
-                  style: TextStyle(
-                    color: Color(0xFFFF9800),
-                    fontSize: 36,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 5,
-                  ),
-                ),
-                const SizedBox(height: 28),
+                const PixelBanner('SETTINGS'),
+                const SizedBox(height: 22),
                 ValueListenableBuilder<bool>(
                   valueListenable: audio.soundOn,
-                  builder: (context, on, _) => MenuButton(
+                  builder: (context, on, _) => PixelButton(
                     label: on ? 'SOUND: ON' : 'SOUND: OFF',
-                    selected: true,
+                    tone: on ? PxTone.green : PxTone.grey,
                     onTap: () => audio.setSound(!on),
                   ),
                 ),
-                const SizedBox(height: 14),
-                MenuButton(
-                  label: 'BACK',
-                  onTap: game.closeSettings,
-                ),
+                const SizedBox(height: 12),
+                PixelButton(label: 'BACK', onTap: game.closeSettings),
               ],
             ),
           ),

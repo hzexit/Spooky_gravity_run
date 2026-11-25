@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../game/audio_manager.dart';
 import '../game/gravity_game.dart';
+import 'pixel_ui.dart';
 
 class Hud extends StatelessWidget {
   final GravityGame game;
@@ -13,19 +14,31 @@ class Hud extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.only(top: 44, right: 12),
         child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
           onTap: () {
             AudioManager.instance.play(AudioManager.click);
             game.pauseGame();
           },
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: Colors.black38,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white70, width: 2),
+          child: CustomPaint(
+            painter: const PixelPainter(
+              fill: Color(0xCC16080E),
+              border: pxGoldDark,
+              light: Color(0xFF2A1219),
+              dark: Color(0xFF0C0407),
+              step: 4,
             ),
-            child: const Icon(Icons.pause, color: Colors.white, size: 26),
+            child: SizedBox(
+              width: 44,
+              height: 44,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(width: 6, height: 18, color: Colors.white),
+                  const SizedBox(width: 6),
+                  Container(width: 6, height: 18, color: Colors.white),
+                ],
+              ),
+            ),
           ),
         ),
       ),
