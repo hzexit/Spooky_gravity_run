@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../game/audio_manager.dart';
 
 class MenuButton extends StatefulWidget {
   final String label;
@@ -30,7 +31,10 @@ class _MenuButtonState extends State<MenuButton> {
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: widget.onTap,
+        onTap: () {
+          AudioManager.instance.play(AudioManager.click);
+          widget.onTap();
+        },
         child: SizedBox(
           width: 320,
           height: 52,

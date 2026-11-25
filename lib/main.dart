@@ -5,6 +5,9 @@ import 'ui/main_menu.dart';
 import 'ui/game_over_menu.dart';
 import 'ui/stats_menu.dart';
 import 'ui/shop_menu.dart';
+import 'ui/hud.dart';
+import 'ui/pause_menu.dart';
+import 'ui/settings_menu.dart';
 
 void main() {
   final game = GravityGame();
@@ -22,6 +25,9 @@ void main() {
             'gameOver': (context, g) => GameOverMenu(game: g),
             'stats': (context, g) => StatsMenu(game: g),
             'shop': (context, g) => ShopMenu(game: g),
+            'hud': (context, g) => Hud(game: g),
+            'pause': (context, g) => PauseMenu(game: g),
+            'settings': (context, g) => SettingsMenu(game: g),
           },
         ),
       ),

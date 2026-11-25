@@ -5,6 +5,7 @@ import 'gravity_game.dart';
 import 'obstacles.dart';
 import 'items.dart';
 import 'skins.dart';
+import 'audio_manager.dart';
 
 class Player extends PositionComponent
     with HasGameReference<GravityGame>, CollisionCallbacks {
@@ -23,9 +24,10 @@ class Player extends PositionComponent
   }
 
   void flip() {
-    dir = -dir;
-    vy = dir * flipKick;
-  }
+  dir = -dir;
+  vy = dir * flipKick;
+  AudioManager.instance.play(AudioManager.flip);
+}
 
   void reset() {
     dir = 1;

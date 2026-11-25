@@ -5,6 +5,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import '../data/db_helper.dart';
+import 'audio_manager.dart';
 import 'background.dart';
 import 'player.dart';
 import 'obstacles.dart';
@@ -42,10 +43,11 @@ class GravityGame extends FlameGame
   @override
   Future<void> onLoad() async {
     try {
+      await AudioManager.instance.init();
       best.value = await DbHelper.instance.getBestDistance();
       currentSkin = skinById(await DbHelper.instance.getSelectedSkin());
     } catch (e) {
-      debugPrint('DB load error: $e');
+      debugPrint('Load error: $e');
     }
 
     level = LevelGenerator(this);
@@ -177,7 +179,12 @@ class GravityGame extends FlameGame
     isNewBest = d > best.value;
     if (isNewBest) best.value = d;
     _saveRun(d, candies);
+
+    AudioManager.instance.stopBgm();
+    AudioManager.instance.play(AudioManager.gameOver);
+
     pauseEngine();
+    overlays.remove('hud');
     overlays.add('gameOver');
   }
 
@@ -185,16 +192,38 @@ class GravityGame extends FlameGame
   void startGame() {
     overlays.remove('menu');
     overlays.remove('gameOver');
+    overlays.remove('pause');
     restart();
     isPlaying = true;
+    overlays.add('hud');
+    AudioManager.instance.startBgm();
   }
 
   // กลับหน้าเมนู
   void backToMenu() {
     overlays.remove('gameOver');
+    overlays.remove('pause');
+    overlays.remove('hud');
     restart();
     isPlaying = false;
     overlays.add('menu');
+    AudioManager.instance.stopBgm();
+  }
+
+  // หยุดเกมชั่วคราว
+  void pauseGame() {
+    if (!isPlaying || isGameOver) return;
+    pauseEngine();
+    AudioManager.instance.pauseBgm();
+    overlays.remove('hud');
+    overlays.add('pause');
+  }
+
+  void resumeGame() {
+    overlays.remove('pause');
+    overlays.add('hud');
+    AudioManager.instance.resumeBgm();
+    resumeEngine();
   }
 
   void showStats() {
@@ -214,6 +243,16 @@ class GravityGame extends FlameGame
 
   void closeShop() {
     overlays.remove('shop');
+    overlays.add('menu');
+  }
+
+  void showSettings() {
+    overlays.remove('menu');
+    overlays.add('settings');
+  }
+
+  void closeSettings() {
+    overlays.remove('settings');
     overlays.add('menu');
   }
 

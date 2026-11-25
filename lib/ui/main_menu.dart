@@ -95,7 +95,7 @@ class MainMenu extends StatelessWidget {
                     const SizedBox(height: 14),
                     MenuButton(
                       label: 'SETTINGS',
-                      onTap: () => _comingSoon(context),
+                      onTap: game.showSettings,
                     ),
                     const SizedBox(height: 14),
                     MenuButton(
