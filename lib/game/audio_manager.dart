@@ -10,11 +10,17 @@ class AudioManager {
   static const String flip = 'change_gravity_sound.mp3';
   static const String gameOver = 'gameover_sound.mp3';
   static const String bgm = 'background_sound.mp3';
+  static const String candy = 'collect_candy_sound.mp3'; // เก็บขนม
+  static const String item = 'received_item_sound.mp3'; // เก็บโล่/แม่เหล็ก
+  static const String shieldBroken = 'shield_broken_sound.mp3'; // โล่แตก
   static const String _key = 'sound_on';
 
   final soundOn = ValueNotifier<bool>(true);
   bool _bgmWanted = false;
   bool _inited = false;
+
+  // พูลเสียงขนม: เล่นซ้อนกันได้หลายอันพร้อมกัน
+  AudioPool? _candyPool;
 
   Future<void> init() async {
     if (_inited) return;
@@ -23,7 +29,13 @@ class AudioManager {
       final prefs = await SharedPreferences.getInstance();
       soundOn.value = prefs.getBool(_key) ?? true;
       FlameAudio.bgm.initialize();
-      await FlameAudio.audioCache.loadAll([click, flip, gameOver]);
+      await FlameAudio.audioCache
+          .loadAll([click, flip, gameOver, candy, item, shieldBroken]);
+      _candyPool = await FlameAudio.createPool(
+        candy,
+        minPlayers: 3,
+        maxPlayers: 8,
+      );
     } catch (e) {
       debugPrint('Audio init error: $e');
     }
@@ -47,7 +59,19 @@ class AudioManager {
   // ---------- เสียงเอฟเฟกต์ ----------
   void play(String file) {
     if (!soundOn.value) return;
+    if (file == candy && _candyPool != null) {
+      _playCandy();
+      return;
+    }
     _play(file);
+  }
+
+  Future<void> _playCandy() async {
+    try {
+      await _candyPool!.start(volume: 0.8);
+    } catch (e) {
+      debugPrint('Audio candy error: $e');
+    }
   }
 
   Future<void> _play(String file) async {

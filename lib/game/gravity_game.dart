@@ -137,6 +137,7 @@ class GravityGame extends FlameGame
   void collectCandy() {
     candies++;
     candyText.text = 'Candy: $candies';
+    AudioManager.instance.play(AudioManager.candy);
   }
 
   void collectPowerUp(PowerType type) {
@@ -149,6 +150,7 @@ class GravityGame extends FlameGame
         break;
     }
     _updatePowerText();
+    AudioManager.instance.play(AudioManager.item);
   }
 
   /// ชนหนาม: ถ้ามีโล่ โล่แตกแทนและหนามหาย ถ้าไม่มีก็จบเกม
@@ -159,6 +161,7 @@ class GravityGame extends FlameGame
       invincibleTime = 0.4;
       spike.removeFromParent();
       _updatePowerText();
+      AudioManager.instance.play(AudioManager.shieldBroken);
     } else {
       gameOver();
     }
