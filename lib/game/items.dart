@@ -31,10 +31,66 @@ class Candy extends PositionComponent with HasGameReference<GravityGame> {
 
   @override
   void render(Canvas canvas) {
+    final w = size.x, h = size.y;
+    final c = Offset(w / 2, h / 2);
+    final r = w * 0.27; // รัศมีเม็ดลูกอมตรงกลาง
+
+    const pink = Color(0xFFFF4F9A);
+    const wrap = Color(0xFFFFB3D1);
+    const outline = Color(0xFF8A1F55);
+    const white = Color(0xFFFFFFFF);
+
+    final fill = Paint()..style = PaintingStyle.fill;
+    final line = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8
+      ..strokeJoin = StrokeJoin.round
+      ..color = outline;
+
+    // ปลายห่อกระดาษซ้าย-ขวา
+    for (final dir in [-1.0, 1.0]) {
+      final baseX = c.dx + dir * r * 0.8;
+      final tipX = c.dx + dir * w * 0.47;
+      final wing = Path()
+        ..moveTo(baseX, c.dy)
+        ..lineTo(tipX, c.dy - h * 0.26)
+        ..lineTo(tipX, c.dy + h * 0.26)
+        ..close();
+      canvas.drawPath(wing, fill..color = wrap);
+      canvas.drawPath(wing, line);
+      // รอยพับ
+      line.strokeWidth = 1.2;
+      canvas.drawLine(
+        Offset(c.dx + dir * (r + w * 0.07), c.dy - h * 0.07),
+        Offset(c.dx + dir * (r + w * 0.07), c.dy + h * 0.07),
+        line,
+      );
+      line.strokeWidth = 1.8;
+    }
+
+    // เม็ดลูกอมลายทางเฉียง
+    canvas.drawCircle(c, r, fill..color = pink);
+    canvas.save();
+    canvas.clipPath(Path()..addOval(Rect.fromCircle(center: c, radius: r)));
+    final stripe = Paint()
+      ..color = white
+      ..strokeWidth = 3.5;
+    for (var i = -3; i <= 3; i++) {
+      final o = i * 7.0;
+      canvas.drawLine(
+        Offset(c.dx + o - r, c.dy + r),
+        Offset(c.dx + o + r, c.dy - r),
+        stripe,
+      );
+    }
+    canvas.restore();
+    canvas.drawCircle(c, r, line);
+
+    // จุดเงาสะท้อน
     canvas.drawCircle(
-      Offset(size.x / 2, size.y / 2),
-      size.x / 2,
-      Paint()..color = const Color(0xFFFFEB3B),
+      Offset(c.dx - r * 0.35, c.dy - r * 0.4),
+      r * 0.16,
+      Paint()..color = white,
     );
   }
 }

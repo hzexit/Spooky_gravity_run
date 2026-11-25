@@ -22,7 +22,8 @@ class GravityGame extends FlameGame
   late TextComponent powerText;
 
   static const double baseSpeed = 220;
-  static const double maxSpeed = 480;
+  static const double maxSpeed = 540;
+  static const double speedGain = 0.26; // ความเร็วที่เพิ่มต่อ 1 เมตร
   static const double magnetRadius = 260; // รัศมีดูดขนม (px)
   static const double magnetDuration = 8; // วินาที
 
@@ -115,7 +116,8 @@ class GravityGame extends FlameGame
     if (!isPlaying || isGameOver) return;
 
     distance += scrollSpeed * dt / 10;
-    scrollSpeed = (baseSpeed + distance * 0.2).clamp(baseSpeed, maxSpeed);
+    scrollSpeed =
+        (baseSpeed + distance * speedGain).clamp(baseSpeed, maxSpeed);
     scoreText.text = '${distance.floor()} m';
 
     if (magnetTime > 0) magnetTime -= dt;
